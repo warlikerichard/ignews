@@ -1,0 +1,21 @@
+{
+  "id": "cf7a00c6-b0bc-461c-b05d-e2f9e636dbe8",
+  "uid": "perferendis-voluptate-qui",
+  "type": "publication",
+  "data": {
+    "Title": [
+      {
+        "type": "heading1",
+        "text": "Benchmark mission-critical content",
+        "spans": []
+      }
+    ],
+    "Content": [
+      {
+        "type": "paragraph",
+        "text": "Excepteur aliquip et laborum labore fugiat commodo aute adipisicing qui cillum laboris.",
+        "spans": []
+      }
+    ]
+  }
+}

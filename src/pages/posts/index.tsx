@@ -1,11 +1,20 @@
 import Head from 'next/head';
 import styles from './styles.module.scss';
-import { usePrismicDocuments } from '@prismicio/react';
+import * as Prismic from '@prismicio/client';
+import {client} from '../../services/prismic';
+import { GetStaticProps } from 'next';
+import { RichText } from 'prismic-dom';
 
-export default function Posts(){
+type Post = {
+    slug, title, excerpt, updatedAt: string
+}
 
-    const [document] = usePrismicDocuments();
-    console.log(document)
+interface PostsProps{
+    posts: Post[]
+}
+
+export default function Posts({posts} : PostsProps){
+
 
     return(
         <>
@@ -14,23 +23,39 @@ export default function Posts(){
             </Head>
             <main className = {styles.container}>
                 <div className = {styles.posts}>
-                    <a href="">
-                        <time>12 de março de 2016</time>
-                        <strong>Creating a Monorepo with Lerna & Yarn Workspaces</strong>
-                        <p>In this guide, you will learn how to create a Monorepo to manage multiple packages with a shared build, test, and release process.</p>
-                    </a>
-                    <a href="">
-                        <time>12 de março de 2016</time>
-                        <strong>Creating a Monorepo with Lerna & Yarn Workspaces</strong>
-                        <p>In this guide, you will learn how to create a Monorepo to manage multiple packages with a shared build, test, and release process.</p>
-                    </a>
-                    <a href="">
-                        <time>12 de março de 2016</time>
-                        <strong>Creating a Monorepo with Lerna & Yarn Workspaces</strong>
-                        <p>In this guide, you will learn how to create a Monorepo to manage multiple packages with a shared build, test, and release process.</p>
-                    </a>
+                    {posts.map(post =>
+                        (
+                            <a key={post.slug} href={post.slug}>
+                            <time>{post.updatedAt}</time>
+                            <strong>{post.title}</strong>
+                            <p>{post.excerpt}</p>
+                            </a>
+                        )
+                    )}
                 </div>
             </main>
         </>
     );
+}
+
+export const getStaticProps : GetStaticProps = async () => {
+    const response = await client.get()
+
+    const posts = response.results.map(post => {
+        return{
+            slug: post.uid,
+            title: RichText.asText(post.data.title),
+            excerpt: post.data.content.find(content => content.type === 'paragraph' && content.text !== '')?.text ?? '',
+            updatedAt: new Date(post.last_publication_date).toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }),
+        }
+    })
+    return{
+        props: {
+            posts
+        }
+    }
 }

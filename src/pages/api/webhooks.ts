@@ -28,7 +28,7 @@ const relevantEvents = new Set([
     'customer.subscription.deleted',
 ])
 
-export default async (req: NextApiRequest, res: NextApiResponse)=>{
+const webhook = async (req: NextApiRequest, res: NextApiResponse)=>{
     if(req.method === 'POST'){
         const buff = await buffer(req)
         const secret = req.headers['stripe-signature']
@@ -46,11 +46,6 @@ export default async (req: NextApiRequest, res: NextApiResponse)=>{
         if(relevantEvents.has(type)){
             try{
                 switch(type){
-                    case 'customer.subscription.updated':
-                        
-
-                        
-
                     case 'customer.subscription.deleted':
                         const subscription = event.data.object as Stripe.Subscription; 
 
@@ -86,3 +81,5 @@ export default async (req: NextApiRequest, res: NextApiResponse)=>{
         res.status(405).end('Method not allowed')
     }
 }
+
+export default webhook;

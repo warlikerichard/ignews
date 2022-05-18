@@ -35,6 +35,7 @@ export async function saveSubscription(
                 {data: subscriptionData}
             )
         )
+        console.log("Creating user... [manageSubscription.ts]")
     }else{
         console.log(subscription.status)
         await fauna.query(
@@ -51,5 +52,6 @@ export async function saveSubscription(
                 {data: subscriptionData}
             )
         )
+        console.log("Not creating user... [manageSubscription.ts]")
     }
 }

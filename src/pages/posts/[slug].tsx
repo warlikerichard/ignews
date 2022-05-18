@@ -40,26 +40,47 @@ export const getServerSideProps: GetServerSideProps = async ({req, params}) => {
     const session = await getSession({req});
     const {slug} = params;
 
-    //if(!session){
-
-    //
-
-    const response = await client.getByUID('publication', String(slug), {})
-
-    const post = {
-        slug,
-        title: RichText.asText(response.data.title),
-        content: RichText.asHtml(response.data.content),
-        updatedAt: new Date(response.last_publication_date).toLocaleString('pt-BR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        }),
-    }
-
-    return{
-        props:{
-            post,
+    if(!session.activeSubscription){
+        return{
+            redirect: {
+                destination: '/',
+                permanent: false
+            }
         }
     }
+
+    try{
+        const response = await client.getByUID('publication', String(slug))
+
+        const post = {
+            slug,
+            title: RichText.asText(response.data.title),
+            content: RichText.asHtml(response.data.content),
+            updatedAt: new Date(response.last_publication_date).toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }),
+        }
+
+        return{
+            props:{
+                post,
+            }
+        }
+    }
+    catch{
+        console.log('Loading...')
+        return{
+            props:{
+                post:{
+                    slug: 'waiting...',
+                    title: 'waiting...',
+                    content: 'waiting...',
+                    updatedAt: 'waiting...'
+                }
+            }
+        }
+    }
+    
 } 

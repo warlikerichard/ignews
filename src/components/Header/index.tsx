@@ -10,11 +10,11 @@ export function Header(){
             <img src="/images/logo.svg" alt="ig.news"/>
             <nav>
 
-                <ActiveLink activeClassName={styles.active} href="/" prefetch>
+                <ActiveLink activeClassName={styles.active} href="/">
                     <a>Home</a>
                 </ActiveLink>
 
-                <ActiveLink activeClassName={styles.active} href="/posts" prefetch>
+                <ActiveLink activeClassName={styles.active} href="/posts">
                     <a>Posts</a>
                 </ActiveLink>
 

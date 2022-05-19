@@ -1,13 +1,16 @@
 import { RichText } from "prismic-dom";
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import { client } from "../../services/prismic";
+import { GetStaticProps } from "next";
+import { client } from "../../../services/prismic";
 
-import styles from './post.module.scss';
+import styles from '../post.module.scss';
 
 import Head from 'next/head'
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 
-interface PostProps{
+interface PostPreviewProps{
     post: {
         slug: string;
         title: string;
@@ -16,7 +19,16 @@ interface PostProps{
     }
 }
 
-export default function Post({post}: PostProps){
+export default function PostPreview({post}: PostPreviewProps){
+    const {data} = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if(data?.activeSubscription){
+            router.push(`/posts/${post.slug}`)
+        }
+    }, [data])
+
     return(
         <>
             <Head>
@@ -28,26 +40,32 @@ export default function Post({post}: PostProps){
                     <h1>{post.title}</h1>
                     <time>{post.updatedAt}</time>
                     <div 
-                    className= {styles.content}
+                    className= {`${styles.content} ${styles.previewContent}`}
                     dangerouslySetInnerHTML={{__html: post.content}} />
+                    
+                    <div className= {styles.continueReading}>
+                        Wanna continue reading?
+                        <Link href="/">
+                            <a>
+                                Subscribe now 🤗
+                            </a>
+                        </Link>
+                    </div>
                 </article>
             </main>
         </>
     );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({req, params}) => {
-    const session = await getSession({req});
-    const {slug} = params;
-
-    if(!session?.activeSubscription){
-        return{
-            redirect: {
-                destination: `/posts/preview/${slug}`,
-                permanent: false
-            }
-        }
+export const getStaticPaths = ()=>{
+    return{
+        paths: [],
+        fallback: 'blocking',
     }
+} 
+
+export const getStaticProps: GetStaticProps = async ({params}) => {
+    const {slug} = params;
 
     try{
         const response = await client.getByUID('publication', String(slug))
@@ -55,7 +73,7 @@ export const getServerSideProps: GetServerSideProps = async ({req, params}) => {
         const post = {
             slug,
             title: RichText.asText(response.data.title),
-            content: RichText.asHtml(response.data.content),
+            content: RichText.asHtml(response.data.content.splice(0, 3)),
             updatedAt: new Date(response.last_publication_date).toLocaleString('pt-BR', {
                 day: '2-digit',
                 month: 'long',
@@ -66,7 +84,8 @@ export const getServerSideProps: GetServerSideProps = async ({req, params}) => {
         return{
             props:{
                 post,
-            }
+            },
+            revalidate: 60*30 // 30 minutes
         }
     }
     catch{
